@@ -15,7 +15,7 @@ int main(){
 	st.insert(arr[0]);
 
 	for(int i = 1; i<x ;i++){
-		if(arr[i] > *st.lower_bound(arr[i])){
+		if(arr[i] > *st.crbegin(arr[i])){ //returns the iterator pointing to the last element, so reduces time complexity
 			st.insert(arr[i]);//takes log(n)
 			//cout<<i<<endl;
 		}
