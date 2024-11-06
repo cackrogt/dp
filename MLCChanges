@@ -1,0 +1,61 @@
+Steps to build Android App (LINUX)
+
+Rust (install) is needed to cross-compile HuggingFace tokenizers to Android. Make sure rustc, cargo, and rustup are available in $PATH.
+
+Update cmake:
+https://askubuntu.com/questions/355565/how-do-i-install-the-latest-version-of-cmake-from-the-command-line
+
+Android Studio (install) with NDK and CMake. To install NDK and CMake, on the Android Studio welcome page, click “Projects → SDK Manager → SDK Tools”. If you have already installed NDK in your development environment, please update your NDK to avoid build android package fail(#2696). The current demo Android APK is built with NDK 27.0.11718014. 
+
+For LINUX
+ANDROID_NDK: $HOME/Android/Sdk/ndk/27.0.11718014
+TVM_NDK_CC: $ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang
+
+#added to bashrc
+export ANDROID_NDK=/home/roy/Android/Sdk/ndk/28.0.12433566
+export TVM_NDK_CC=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang
+export TVM_SOURCE_DIR=/home/roy/mlc-android/mlc-llm/3rdparty/tvm
+export JAVA_HOME=/home/roy/Downloads/android-studio-2024.2.1.11-linux/android-studio/jbr #it is stated that this should be set as such.
+
+#you will need to install miniconda, please check details
+(
+	roy@anku:~$ mkdir -p ~/miniconda3
+	roy@anku:~$ wget https://repo.anaconda.com/miniconda/
+	roy@anku:~$ bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
+	roy@anku:~$ rm ~/miniconda3/miniconda.sh
+)
+
+conda create --name mlc-prebuilt python=3.11
+conda activate mlc-prebuilt
+python -m pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly-cpu 
+conda install -c conda-forge git-lfs
+mlc-ai-nightly-cpu
+
+export TVM_SOURCE_DIR=/home/roy/mlc-android/mlc-llm/3rdparty/tvm/
+export MLC_LLM_SOURCE_DIR=/home/roy/mlc-android/mlc-llm
+
+
+#############################################################################
+
+
+Step 1. Install Build Dependencies¶
+
+First and foremost, please clone the MLC LLM GitHub repository. After cloning, go to the android/ directory.
+
+git clone https://github.com/mlc-ai/mlc-llm.git
+cd mlc-llm
+git submodule update --init --recursive
+cd android
+
+Step 2. Build Runtime and Model Libraries¶
+
+The models to be built for the Android app are specified in MLCChat/mlc-package-config.json: in the model_list, model points to the Hugging Face repository which
+model points to the Hugging Face repository which contains the pre-converted model weights. The Android app will download model weights from the Hugging Face URL.
+model_id is a unique model identifier.
+estimated_vram_bytes is an estimation of the vRAM the model takes at runtime.
+"bundle_weight": true means the model weights of the model will be bundled into the app when building.
+overrides specifies some model config parameter overrides.
+
+cd /path/to/MLCChat  # e.g., "android/MLCChat"
+export MLC_LLM_SOURCE_DIR=/path/to/mlc-llm  # has to be absolute path, ../.. does not work
+mlc_llm package
